@@ -1,0 +1,23 @@
+# import knihovny pandas
+import pandas as pd
+df = pd.read_csv('https://raw.githubusercontent.com/petrrozkosny/pydata/main/pydata_data.csv',sep=';')
+df['SNWD'] = df['SNWD'].fillna(0)
+df['TMAX'] = df['TMAX'].fillna(0)
+df['DATE'] = pd.to_datetime(df['DATE'], format='%Y-%m-%d')
+df['MONTH'] = df['DATE'].dt.month
+
+df_ruzyne_12 = df.loc[(df['NAME'] == 'RUZYNE') & (df['MONTH'] == 12)]
+
+df_ruzyne_zima_snezi  = df_ruzyne_12.loc[(df_ruzyne_12['SNWD'] > 0)&(df_ruzyne_12['TMAX'] < 0)]
+df_ruzyne_zima = df_ruzyne_12.loc[df_ruzyne_12['TMAX'] < 0]
+ruzyne_pocet = df_ruzyne_12['DATE'].count()
+
+p_zima_snezi = df_ruzyne_zima_snezi['DATE'].count() / ruzyne_pocet
+p_zima = df_ruzyne_zima['DATE'].count() / ruzyne_pocet
+
+p_snezi = p_zima_snezi / p_zima
+print(f'pravdepodobnost zimy v Ruzyne {p_zima_snezi}')
+print(f'pravdepodobnost sněžení v zimě v Ruzyne {p_snezi}')
+
+
+
