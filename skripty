@@ -20,4 +20,31 @@ print(f'pravdepodobnost zimy v Ruzyne {p_zima_snezi}')
 print(f'pravdepodobnost sněžení v zimě v Ruzyne {p_snezi}')
 
 
+_________________________________________________________________________________________
+
+# import knihovny pandas
+import pandas as pd
+df = pd.read_csv('https://raw.githubusercontent.com/petrrozkosny/pydata/main/pydata_data.csv',sep=';')
+
+df['DATE'] = pd.to_datetime(df['DATE'], format='%Y-%m-%d')
+df['MONTH'] = df['DATE'].dt.month
+
+df_ruzyne = df.loc[(df['NAME'] == 'RUZYNE') & (df['MONTH'] == 3)]
+df_turany = df.loc[(df['NAME'] == 'TURANY') & (df['MONTH'] == 3)]
+
+ruzyne_prselo  = df_ruzyne.loc[df_ruzyne['PRCP'] > 0]
+turany_prselo  = df_turany.loc[df_turany['PRCP'] > 0]
+
+ruzyne_prselo_pocet = ruzyne_prselo['PRCP'].count()
+turany_prselo_pocet = turany_prselo['PRCP'].count()
+
+ruzyne_pocet = df_ruzyne['PRCP'].count()
+turany_pocet = df_turany['PRCP'].count()
+
+ruzyne_p_prselo = ruzyne_prselo_pocet / ruzyne_pocet
+turany_p_prselo = turany_prselo_pocet / turany_pocet
+
+p_prselo_ruzyne_turany = ruzyne_p_prselo * turany_p_prselo
+p_prselo_ruzyne_turany
+
 
