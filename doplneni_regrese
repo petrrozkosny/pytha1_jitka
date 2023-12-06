@@ -1,0 +1,4 @@
+# Níže uvedený kód vložte do notebooku s lineární regresí, vrátí reálnou hodnotu a k ní odhadovanou hodnotu
+
+  # Porovnání predikce s reálnými daty
+df_pred = pd.DataFrame({'TMAX_RUZ': X_test['TMAX'], 'TMAX_TUR': y_test['TMAX'], 'TMAX_TUR_PRED': y_pred.flatten()}).reset_index()
