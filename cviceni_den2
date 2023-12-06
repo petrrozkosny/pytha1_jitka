@@ -1,0 +1,69 @@
+# Import knihoven
+import pandas as pd
+import matplotlib.pyplot as plt
+from joypy import joyplot
+
+# Načtení dat
+df = pd.read_csv('https://raw.githubusercontent.com/petrrozkosny/pydata/main/pydata_data.csv', sep=';')
+df = df.loc[df['NAME'] == 'RUZYNE']
+
+# Převod na datetime a vytvoření nových sloupců
+df['DATE'] = pd.to_datetime(df['DATE'])
+df['MONTH'] = df['DATE'].dt.month
+df['YEAR'] = df['DATE'].dt.year
+
+# Vykreslení boxplotu
+plt.figure(figsize=(20, 5))
+df.boxplot(column='TMAX', by='MONTH', grid=False)
+plt.title('Boxplot maximálních teplot podle měsíce')
+plt.xlabel('Měsíc')
+plt.ylabel('TMAX')
+
+
+# Vykreslení joyplotu
+plt.figure(figsize=(20, 5))
+joyplot(data=df, by='MONTH' ,column='TMAX')
+plt.title('Hřebenový graf maximálních teplot podle měsíce')
+plt.show()
+
+# Měsíční kvantily
+df_monthly_quantiles = df.groupby('MONTH')['TMAX'].quantile([0.25, 0.75]).reset_index()
+df_monthly_quantiles = df_monthly_quantiles.pivot(index='MONTH', columns='level_1', values='TMAX')
+df_monthly_quantiles.columns = ['0.25', '0.75']
+df_monthly_quantiles = df_monthly_quantiles.reset_index()
+
+df['1Q'] = df['MONTH'].apply(lambda x: df_monthly_quantiles.loc[df_monthly_quantiles['MONTH'] == x]['0.25'].values[0])
+df['3Q'] = df['MONTH'].apply(lambda x: df_monthly_quantiles.loc[df_monthly_quantiles['MONTH'] == x]['0.75'].values[0])
+df['IQR'] = df['3Q'] - df['1Q']
+df['OUTLIER'] = ((df['TMAX'] < df['1Q'] - 1.5 * df['IQR']) | (df['TMAX'] > df['3Q'] + 1.5 * df['IQR'])).astype(int)
+df_outliers = df.loc[df['OUTLIER'] == 1]
+
+print(df_outliers.head(10))
+
+# Hustota pravděpodobnosti
+plt.figure(figsize=(20, 5))
+df['TMAX'].plot.kde()
+plt.title('Hustota pravděpodobnosti maximálních teplot')
+plt.xlabel('TMAX')
+plt.ylabel('Hustota pravděpodobnosti')
+plt.show()
+
+#Kolmogoro-Smirnovův test testuje, zda jsou data normálně rozdělena
+from scipy.stats import kstest
+distr = kstest(df['TMAX'].dropna(), 'norm')
+
+
+print(distr)
+
+'''
+KstestResult(
+    statistic=0.8812547454138562 : čím větší, tím více se data liší od normálního rozdělení (maximální hodnota je 1)
+    pvalue=0.0 : P-value nulové hypotézy, že data pochází z normálního rozdělení
+    statistic_location=2.3 : hodnota na ose x, kde je největší rozdíl mezi empirickou distribuční funkcí a distribuční funkcí normálního rozdělení
+    statistic_sign=-1 : Kladná hodnota znamená, že empirická distribuční funkce je nad distribuční funkcí normálního rozdělení, záporná hodnota znamená, že je pod ní
+    
+
+        
+    )
+
+'''
