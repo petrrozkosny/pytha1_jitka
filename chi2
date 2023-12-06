@@ -1,0 +1,19 @@
+from scipy.stats import chi2
+from scipy.stats import chi2_contingency
+
+df_brands =df.loc[df['brand'].isin(['volkswagen', 'skoda', 'audi'])]
+df_brands = df_brands.groupby(['brand'])['brand'].count().rename('POCET_INZERATU').reset_index()
+
+soucet = df_brands['POCET_INZERATU'].sum()
+df_brands['OCEKAVANY_POCET'] = df_brands['POCET_INZERATU'].sum() / 3
+df_brands['CHI2'] = ((df_brands['POCET_INZERATU'] - df_brands['OCEKAVANY_POCET'])**2) / df_brands['OCEKAVANY_POCET']
+chi_quadrat = df_brands['CHI2'].sum()
+
+
+
+p_value =  chi2.sf(chi_quadrat, df=2)
+
+
+print('Chi2: ', chi_quadrat)
+print('P-value: ', p_value)
+
